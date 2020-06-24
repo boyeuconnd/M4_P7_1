@@ -1,5 +1,6 @@
 package codegym;
 
+import codegym.repository.CustomerRepository;
 import codegym.repository.impl.CustomerRepositoryImpl;
 import codegym.service.CustomerService;
 import codegym.service.impl.CustomerServiceImpl;
@@ -75,6 +76,8 @@ public class AppConfiguration extends WebMvcConfigurerAdapter implements Applica
     public EntityManager entityManager(EntityManagerFactory entityManagerFactory){
         return entityManagerFactory.createEntityManager();
     }
+
+    //Factory quản lý cá entityManager
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(){
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
@@ -94,12 +97,16 @@ public class AppConfiguration extends WebMvcConfigurerAdapter implements Applica
         dataSource.setPassword("1234");
         return dataSource;
     }
+
+    //Nếu muốn sử dụng transactional thì mới khai báo cái fking bean này
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory emf){
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(emf);
         return transactionManager;
     }
+
+    //Tự động cập nhật kiểu dữ liệu của trường trong bảng database theo kiểu dữ liệu của entity thay vì phải tự viết cậu lệnh
     Properties additionalProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
@@ -109,7 +116,7 @@ public class AppConfiguration extends WebMvcConfigurerAdapter implements Applica
     //Init entity autowired
 
     @Bean
-    public CustomerRepositoryImpl customerRepository(){
+    public CustomerRepository customerRepository(){
         return new CustomerRepositoryImpl();
     }
 
@@ -117,4 +124,5 @@ public class AppConfiguration extends WebMvcConfigurerAdapter implements Applica
     public CustomerService customerService(){
         return new CustomerServiceImpl();
     }
+
 }
