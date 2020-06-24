@@ -1,23 +1,36 @@
 package codegym.controller;
 
 import codegym.model.Customer;
+import codegym.model.Province;
 import codegym.service.CustomerService;
+import codegym.service.ProvinceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+
 
 @Controller
 @EnableWebMvc
 public class CustomerController {
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private ProvinceService provinceService;
+
+
+    @ModelAttribute("provinces")
+    public Iterable<Province> provinces(){
+        return provinceService.findAll();
+    }
 
     @GetMapping("/create-customer")
     public ModelAndView showCreateForm(){
@@ -36,10 +49,14 @@ public class CustomerController {
     }
 
     @GetMapping("/customers")
-    public ModelAndView listCustomers(){
-        List<Customer> customers = customerService.findAll();
-        ModelAndView modelAndView = new ModelAndView("/customer/list");
-        modelAndView.addObject("customers", customers);
+    public ModelAndView listCustomers( @RequestParam("s") Optional<String> s,@PageableDefault(size = 10) Pageable pageable){
+        Page<Customer> customers;
+        if(s.isPresent()){
+            customers=customerService.findAllByFirstNameContaining(s.get(),pageable);
+        }else {
+            customers = customerService.findAll(pageable);
+        }
+        ModelAndView modelAndView = new ModelAndView("/customer/list","customers",customers);
         return modelAndView;
     }
 
